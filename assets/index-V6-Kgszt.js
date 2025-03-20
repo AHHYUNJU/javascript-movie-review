@@ -57,7 +57,7 @@ async function fetchPopularMovies(page2) {
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization: `Bearer ${void 0}`
+      Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1NzVlOWQxYjA0NDVjMjcwNDFlNjJkNGRlYmRmNDMxZiIsIm5iZiI6MTc0MjI5MzAxMy40MTI5OTk5LCJzdWIiOiI2N2Q5NDgxNTZhN2I5ODA0MzZjNmIwMmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.iG09bisridxjWWiqAEoG5KgVgdex771xzTPz1w156Wo"}`
     }
   };
   const response = await fetch(popularMovieUrl, options);
@@ -80,10 +80,10 @@ const createElement = ({
   });
   return $element;
 };
-const STAR_IMG_SRC = "./images/star_empty.png";
+const STAR_IMG_SRC = "./star_empty.png";
 const MoviePreviewInfo = ({ movie, bigFont = true }) => {
-  const title = movie.title;
-  const voteAverage = movie.vote_average;
+  const title = movie == null ? void 0 : movie.title;
+  const voteAverage = movie == null ? void 0 : movie.vote_average;
   const $fragment2 = document.createDocumentFragment();
   const $rate = createElement({ tag: "div", classNames: ["rate"] });
   const $starImg = createElement({
@@ -111,8 +111,8 @@ const MoviePreviewInfo = ({ movie, bigFont = true }) => {
 };
 const imageUrl = (path, size = 400) => `https://image.tmdb.org/t/p/w${size}${path}`;
 const MovieItem = ({ movie }) => {
-  const title = movie.title;
-  const posterPath = movie.poster_path;
+  const title = movie == null ? void 0 : movie.title;
+  const posterPath = movie == null ? void 0 : movie.poster_path;
   const $li = createElement({
     tag: "li"
   });
@@ -196,7 +196,7 @@ async function fetchSearchMovies(query, page2) {
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization: `Bearer ${void 0}`
+      Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1NzVlOWQxYjA0NDVjMjcwNDFlNjJkNGRlYmRmNDMxZiIsIm5iZiI6MTc0MjI5MzAxMy40MTI5OTk5LCJzdWIiOiI2N2Q5NDgxNTZhN2I5ODA0MzZjNmIwMmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.iG09bisridxjWWiqAEoG5KgVgdex771xzTPz1w156Wo"}`
     }
   };
   const response = await fetch(searchMovieUrl, options);
@@ -460,13 +460,14 @@ deleteParams();
 Main({
   movies: "loading"
 });
-(async () => {
+async function init() {
   var _a;
   const PAGE2 = 1;
   const popularMovieData = await fetchPopularMovies(PAGE2);
   movies.updateMovies(popularMovieData.results);
   (_a = document.querySelector("#wrap")) == null ? void 0 : _a.remove();
-})();
-Main({
-  movies: movies.movieList
-});
+  Main({
+    movies: movies.movieList
+  });
+}
+init();
