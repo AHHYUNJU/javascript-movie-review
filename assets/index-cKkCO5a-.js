@@ -80,7 +80,7 @@ const createElement = ({
   });
   return $element;
 };
-const STAR_IMG_SRC = "images/star_empty.png";
+const STAR_IMG_SRC = "./images/star_empty.png";
 const MoviePreviewInfo = ({ movie, bigFont = true }) => {
   const title = movie == null ? void 0 : movie.title;
   const voteAverage = movie == null ? void 0 : movie.vote_average;
@@ -152,7 +152,7 @@ const SkeletonMovieItem = () => {
         `;
   return $div;
 };
-const NOTHING_IMG_SRC = "images/으아아.png";
+const NOTHING_IMG_SRC = "./images/으아아.png";
 const NOTHING_TEXT = "검색 결과가 없습니다.";
 const $fragment = document.createDocumentFragment();
 const NothingMovieList = () => {
@@ -325,7 +325,7 @@ const SearchBar = () => {
   $form.addEventListener("submit", handleSearch);
   return $form;
 };
-const LOGO_IMG_SRC$1 = "images/logo.png";
+const LOGO_IMG_SRC$1 = "./images/logo.png";
 const Gnb = () => {
   const $div = createElement({
     tag: "div",
@@ -396,7 +396,7 @@ const MovieContainer = ({ movies: movies2 }) => {
   $main.appendChild(Button({ text: BUTTON_MORE, type: "more" }));
   return $container;
 };
-const LOGO_IMG_SRC = "images/woowacourse_logo.png";
+const LOGO_IMG_SRC = "./images/woowacourse_logo.png";
 const Footer = () => {
   const $footer = createElement({
     tag: "footer",
