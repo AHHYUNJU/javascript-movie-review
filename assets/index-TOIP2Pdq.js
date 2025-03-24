@@ -80,7 +80,7 @@ const createElement = ({
   });
   return $element;
 };
-const STAR_IMG_SRC = "./star_empty.png";
+const STAR_IMG_SRC = "images/star_empty.png";
 const MoviePreviewInfo = ({ movie, bigFont = true }) => {
   const title = movie == null ? void 0 : movie.title;
   const voteAverage = movie == null ? void 0 : movie.vote_average;
@@ -152,7 +152,7 @@ const SkeletonMovieItem = () => {
         `;
   return $div;
 };
-const NOTHING_IMG_SRC = "./images/으아아.png";
+const NOTHING_IMG_SRC = "images/으아아.png";
 const NOTHING_TEXT = "검색 결과가 없습니다.";
 const $fragment = document.createDocumentFragment();
 const NothingMovieList = () => {
@@ -280,7 +280,7 @@ const TopRatedContainer = ({ popularMovie }) => {
   $topRatedMovie.append(Button({ text: BUTTON_DETAIL, type: "detail" }));
   return $topRatedContainer;
 };
-const SEARCH_BUTTON_IMAGE_SRC = "./images/searchButtonIcon.png";
+const SEARCH_BUTTON_IMAGE_SRC = "images/searchButtonIcon.png";
 const PAGE = 1;
 const SEARCH_BAR_PLACEHOLDER = "검색어를 입력하세요";
 const SearchBar = () => {
@@ -310,20 +310,22 @@ const SearchBar = () => {
     document.querySelector(".background-container").classList.add("disappear");
     const params = new URLSearchParams(window.location.search);
     params.set("query", query);
-    window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
     document.querySelector(".list-title").textContent = `"${query}" 검색 결과`;
     const searchMovieData = await fetchSearchMovies(query, PAGE);
     movies.updateMovies(searchMovieData.results);
     const $thumbnailList = document.querySelector(".thumbnail-list");
     if ($thumbnailList) $thumbnailList.remove();
-    document.querySelector("section").appendChild(
-      MovieList({ movies: movies.movieList })
-    );
+    document.querySelector("section").appendChild(MovieList({ movies: movies.movieList }));
   };
   $form.addEventListener("submit", handleSearch);
   return $form;
 };
-const LOGO_IMG_SRC$1 = "./images/logo.png";
+const LOGO_IMG_SRC$1 = "images/logo.png";
 const Gnb = () => {
   const $div = createElement({
     tag: "div",
@@ -394,7 +396,7 @@ const MovieContainer = ({ movies: movies2 }) => {
   $main.appendChild(Button({ text: BUTTON_MORE, type: "more" }));
   return $container;
 };
-const LOGO_IMG_SRC = "./images/woowacourse_logo.png";
+const LOGO_IMG_SRC = "/images/woowacourse_logo.png";
 const Footer = () => {
   const $footer = createElement({
     tag: "footer",
