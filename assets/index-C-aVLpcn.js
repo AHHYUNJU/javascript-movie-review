@@ -396,7 +396,7 @@ const MovieContainer = ({ movies: movies2 }) => {
   $main.appendChild(Button({ text: BUTTON_MORE, type: "more" }));
   return $container;
 };
-const LOGO_IMG_SRC = "/images/woowacourse_logo.png";
+const LOGO_IMG_SRC = "images/woowacourse_logo.png";
 const Footer = () => {
   const $footer = createElement({
     tag: "footer",
