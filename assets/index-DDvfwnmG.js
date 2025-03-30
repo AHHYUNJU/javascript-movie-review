@@ -658,7 +658,7 @@ const Header = ({ popularMovie }) => {
   });
   $header.appendChild(Gnb());
   $header.appendChild($backgroundContainer);
-  $backgroundContainer.appendChild($overlay);
+  $header.appendChild($overlay);
   $overlay.appendChild($img);
   $backgroundContainer.appendChild(TopRatedContainer({ popularMovie }));
   return $header;
