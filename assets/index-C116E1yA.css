@@ -179,7 +179,6 @@ button {
 }
 
 button.primary {
-  display: none;
   color: var(--color-white);
   font-weight: bold;
   background-color: var(--color-lightblue-90);
@@ -426,7 +425,7 @@ p.rate > span {
 .search-bar-container {
   display: flex;
   border: 2px solid #d1d5db;
-  width: 90%;
+  width: 70%;
   height: 36px;
   border-radius: 32px;
 }
@@ -440,6 +439,7 @@ p.rate > span {
   border-radius: 32px;
   padding-left: 20px;
 }
+
 .search-bar::placeholder {
   color: #ffff;
 }

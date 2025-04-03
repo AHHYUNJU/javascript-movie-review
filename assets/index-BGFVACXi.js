@@ -8,15 +8,7 @@ var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot
 var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
-var __privateWrapper = (obj, member, setter, getter) => ({
-  set _(value) {
-    __privateSet(obj, member, value, setter);
-  },
-  get _() {
-    return __privateGet(obj, member, getter);
-  }
-});
-var _movieList, _page;
+var _movieList;
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -72,7 +64,6 @@ async function fetchPopularMovies(page2) {
     alert("영화 정보를 불러오는데 실패했습니다.");
   }
 }
-const imageUrl = (path, size = 400) => `https://image.tmdb.org/t/p/w${size}${path}`;
 const createElement = ({
   tag,
   classNames = [],
@@ -95,6 +86,7 @@ const createElement = ({
   });
   return $element;
 };
+const imageUrl = (path, size = 400) => `https://image.tmdb.org/t/p/w${size}${path}`;
 const getYear = (releaseDate) => {
   const data = new Date(releaseDate);
   return data.getFullYear();
@@ -102,19 +94,153 @@ const getYear = (releaseDate) => {
 const getGenres = (genres) => {
   return genres.map(({ name }) => name).join(", ");
 };
+const createModalContent = (movieDetail) => {
+  const { title, release_date, genres, vote_average, overview, poster_path } = movieDetail;
+  const $modal = createElement({ tag: "div", classNames: ["modal"] });
+  const $closeModal = createElement({
+    tag: "button",
+    classNames: ["close-modal"],
+    id: "closeModal"
+  });
+  const $closeImg = createElement({
+    tag: "img",
+    src: "./images/modal_button_close.png"
+  });
+  $closeModal.appendChild($closeImg);
+  const $modalContainer = createElement({
+    tag: "div",
+    classNames: ["modal-container"]
+  });
+  const $modalImage = createElement({
+    tag: "div",
+    classNames: ["modal-image"]
+  });
+  const $modalImg = createElement({ tag: "img", src: imageUrl(poster_path) });
+  $modalImage.appendChild($modalImg);
+  const $modalDescription = createElement({
+    tag: "div",
+    classNames: ["modal-description"]
+  });
+  const $title = createElement({ tag: "h1", id: "modalTitle" });
+  $title.textContent = title;
+  const $category = createElement({ tag: "p", classNames: ["category"] });
+  $category.textContent = `${getYear(release_date)} · ${getGenres(genres)}`;
+  const $averageRate = createElement({ tag: "p", classNames: ["rate"] });
+  const $label = createElement({ tag: "span" });
+  $label.textContent = "평균";
+  const $starFilled = createElement({
+    tag: "img",
+    classNames: ["star"],
+    src: "./images/star_filled.png"
+  });
+  const $rateScore = createElement({ tag: "span", classNames: ["rate-score"] });
+  $rateScore.textContent = `${vote_average}`;
+  $averageRate.append($label, $starFilled, $rateScore);
+  const $rateBox = createElement({ tag: "div", classNames: ["rate-box"] });
+  const $myStar = createElement({ tag: "h2", classNames: ["my-star"] });
+  $myStar.textContent = "내 별점";
+  const $starCommentBox = createElement({
+    tag: "div",
+    classNames: ["star-comment-box"]
+  });
+  const $stars = createElement({ tag: "div", classNames: ["stars"] });
+  const $comment = createElement({ tag: "p", classNames: ["comment"] });
+  const $score = createElement({ tag: "span", classNames: ["score"] });
+  $starCommentBox.append($stars, $comment, $score);
+  const $overview = createElement({ tag: "h2", classNames: ["overview"] });
+  $overview.textContent = "줄거리";
+  const $detail = createElement({ tag: "p", classNames: ["detail"] });
+  $detail.textContent = overview;
+  $rateBox.append($myStar, $starCommentBox);
+  $modalDescription.append(
+    $title,
+    $category,
+    $averageRate,
+    $rateBox,
+    $overview,
+    $detail
+  );
+  $modalContainer.append($modalImage, $modalDescription);
+  $modal.append($closeModal, $modalContainer);
+  return { $modal, $stars, $score, $comment };
+};
+const SCORE_MESSAGE = {
+  0: "별점이 없어요",
+  2: "최악이예요",
+  4: "별로예요",
+  6: "보통이에요",
+  8: "재미있어요",
+  10: "명작이에요"
+};
+const renderStars = (rating, $stars, $score, $comment, movieId, rerender) => {
+  $stars.replaceChildren();
+  const score = rating * 2;
+  $score.textContent = `(${score}/10)`;
+  $comment.textContent = SCORE_MESSAGE[score];
+  const filledCount = rating;
+  const emptyCount = 5 - rating;
+  Array.from({ length: filledCount }).forEach((_, index) => {
+    const $star = createElement({
+      tag: "img",
+      classNames: ["star"],
+      src: "./images/star_filled.png",
+      dataset: { order: String(index + 1) }
+    });
+    $stars.appendChild($star);
+  });
+  Array.from({ length: emptyCount }).forEach((_, index) => {
+    const $star = createElement({
+      tag: "img",
+      classNames: ["star"],
+      src: "./images/star_empty.png",
+      dataset: { order: String(filledCount + index + 1) }
+    });
+    $stars.appendChild($star);
+  });
+  $stars.onclick = (event) => {
+    var _a;
+    const $target = event.target;
+    const order = (_a = $target.dataset) == null ? void 0 : _a.order;
+    if (!order) return;
+    const saved = JSON.parse(localStorage.getItem("myRating")) ?? {};
+    const newState = JSON.stringify({ ...saved, [movieId]: order });
+    localStorage.setItem("myRating", newState);
+    rerender(Number(order));
+  };
+};
 class Modal {
   constructor(movieDetail, id) {
     __publicField(this, "modalElement");
     __publicField(this, "closeButton");
     __publicField(this, "movieId");
+    __publicField(this, "$stars");
+    __publicField(this, "$score");
+    __publicField(this, "$comment");
+    __publicField(this, "renderStars", (rating) => {
+      renderStars(
+        rating,
+        this.$stars,
+        this.$score,
+        this.$comment,
+        this.movieId,
+        this.renderStars
+      );
+    });
     this.movieId = id;
     this.modalElement = document.getElementById(
       "modalBackground"
     );
-    this.render(movieDetail);
+    const { $modal, $stars, $score, $comment } = createModalContent(movieDetail);
+    this.modalElement.replaceChildren($modal);
+    this.$stars = $stars;
+    this.$score = $score;
+    this.$comment = $comment;
     this.closeButton = document.getElementById(
       "closeModal"
     );
+    const saved = JSON.parse(localStorage.getItem("myRating")) ?? {};
+    const rateValue = Number(saved[this.movieId]) || 0;
+    this.renderStars(rateValue);
     this.open();
     this.addEventListeners();
   }
@@ -133,169 +259,6 @@ class Modal {
         this.close();
       }
     });
-  }
-  render({
-    title,
-    release_date,
-    genres,
-    vote_average,
-    overview,
-    poster_path
-  }) {
-    const $modal = createElement({
-      tag: "div",
-      classNames: ["modal"]
-    });
-    const $closeModal = createElement({
-      tag: "button",
-      classNames: ["close-modal"],
-      id: "closeModal"
-    });
-    const $modalCloseButttonImg = createElement({
-      tag: "img",
-      src: "./images/modal_button_close.png"
-    });
-    const $modalContainer = createElement({
-      tag: "div",
-      classNames: ["modal-container"]
-    });
-    const $modalImage = createElement({
-      tag: "div",
-      classNames: ["modal-image"]
-    });
-    const $ModalImg = createElement({
-      tag: "img",
-      src: imageUrl(poster_path)
-    });
-    const $modalDescription = createElement({
-      tag: "div",
-      classNames: ["modal-description"]
-    });
-    const $h2 = createElement({
-      tag: "h1",
-      id: "modalTitle"
-    });
-    $h2.textContent = title;
-    const $category = createElement({
-      tag: "p",
-      classNames: ["category"]
-    });
-    $category.textContent = `${getYear(release_date)} · ${getGenres(genres)}`;
-    const $averageRate = createElement({
-      tag: "p",
-      classNames: ["rate"]
-    });
-    const $labelspan = createElement({
-      tag: "span"
-    });
-    $labelspan.textContent = "평균";
-    const $starFilled = createElement({
-      tag: "img",
-      src: "./images/star_filled.png",
-      classNames: ["star"]
-    });
-    const $rateScore = createElement({
-      tag: "span",
-      classNames: ["rate-score"]
-    });
-    $rateScore.textContent = `${vote_average}`;
-    const $rateBox = createElement({
-      tag: "div",
-      classNames: ["rate-box"]
-    });
-    const $myStar = createElement({
-      tag: "h2",
-      classNames: ["my-star"]
-    });
-    $myStar.textContent = "내 별점";
-    const $starCommentBox = createElement({
-      tag: "div",
-      classNames: ["star-comment-box"]
-    });
-    const $stars = createElement({
-      tag: "div",
-      classNames: ["stars"]
-    });
-    const $comment = createElement({
-      tag: "p",
-      classNames: ["comment"]
-    });
-    $comment.textContent = "명작이에요";
-    const $score = createElement({
-      tag: "span",
-      classNames: ["score"]
-    });
-    const $overviewSpan = createElement({
-      tag: "h2",
-      classNames: ["overview"]
-    });
-    $overviewSpan.textContent = "줄거리";
-    const $detail = createElement({
-      tag: "p",
-      classNames: ["detail"]
-    });
-    $detail.textContent = overview;
-    $modal.appendChild($closeModal);
-    $closeModal.appendChild($modalCloseButttonImg);
-    $modal.appendChild($modalContainer);
-    $modalContainer.append($modalImage, $modalDescription);
-    $modalImage.appendChild($ModalImg);
-    $modalDescription.append(
-      $h2,
-      $category,
-      $averageRate,
-      $rateBox,
-      $overviewSpan,
-      $detail
-    );
-    $averageRate.append($labelspan, $starFilled, $rateScore);
-    $rateBox.append($myStar, $starCommentBox);
-    $starCommentBox.append($stars, $comment, $score);
-    const renderStars = (rating) => {
-      $stars.replaceChildren();
-      const score = rating * 2;
-      $score.textContent = `(${score}/10)`;
-      const filledCount = rating;
-      const emptyCount = 5 - rating;
-      for (let i = 0; i < filledCount; i++) {
-        const $countedStar = createElement({
-          tag: "img",
-          classNames: ["star"],
-          src: "./images/star_filled.png"
-        });
-        $countedStar.addEventListener("click", () => {
-          const saved2 = JSON.parse(localStorage.getItem("myRating")) ?? {};
-          const newState = JSON.stringify({
-            ...saved2,
-            [this.movieId]: String(i + 1)
-          });
-          localStorage.setItem("myRating", newState);
-          renderStars(i + 1);
-        });
-        $stars.appendChild($countedStar);
-      }
-      for (let i = 0; i < emptyCount; i++) {
-        const $unCountedStar = createElement({
-          tag: "img",
-          classNames: ["star"],
-          src: "./images/star_empty.png"
-        });
-        $unCountedStar.addEventListener("click", () => {
-          const saved2 = JSON.parse(localStorage.getItem("myRating")) ?? {};
-          const newState = JSON.stringify({
-            ...saved2,
-            [this.movieId]: String(filledCount + i + 1)
-          });
-          localStorage.setItem("myRating", newState);
-          renderStars(filledCount + i + 1);
-        });
-        $stars.appendChild($unCountedStar);
-      }
-    };
-    this.modalElement.replaceChildren($modal);
-    const saved = JSON.parse(localStorage.getItem("myRating")) ?? {};
-    const rateValue = Number(saved[this.movieId]);
-    renderStars(rateValue ? rateValue : 4);
   }
 }
 const LOGO_IMG_SRC$1 = "./images/woowacourse_logo.png";
@@ -493,28 +456,21 @@ class StoreMovies {
 }
 _movieList = new WeakMap();
 const storeMovies = new StoreMovies();
-class Page {
-  constructor() {
-    __privateAdd(this, _page);
-    __privateSet(this, _page, 1);
-  }
-  getNextPage() {
-    __privateWrapper(this, _page)._++;
-    return __privateGet(this, _page);
-  }
-}
-_page = new WeakMap();
-const page = new Page();
+let page = 1;
+const getNextPage = () => {
+  page++;
+  return page;
+};
 const Button = ({ text, type }) => {
   const $button = createElement({
     tag: "button",
-    classNames: ["primary", `${type}`]
+    classNames: ["primary", type]
   });
   $button.textContent = text;
   $button.addEventListener("click", async () => {
     const params = new URLSearchParams(window.location.search);
     let fetchedMovies;
-    const currentPage = page.getNextPage();
+    const currentPage = getNextPage();
     if (params.has("query")) {
       fetchedMovies = await fetchSearchMovies(params.get("query"), currentPage);
     } else {
@@ -525,13 +481,13 @@ const Button = ({ text, type }) => {
       $button.classList.toggle("disappear");
     }
     document.querySelector(".thumbnail-list").remove();
-    const oberserver = document.querySelector(".oberserver");
+    const observer = document.querySelector(".observer");
     const section = document.querySelector("section");
     section.insertBefore(
       MovieList({
         movies: storeMovies.movieList
       }),
-      oberserver
+      observer
     );
   });
   return $button;
@@ -595,6 +551,7 @@ const SearchBar = () => {
     const query = $input.value.trim();
     if (!query) return;
     document.querySelector(".background-container").classList.add("disappear");
+    document.querySelector(".overlay").classList.add("disappear");
     const params = new URLSearchParams(window.location.search);
     params.set("query", query);
     window.history.replaceState(
@@ -663,7 +620,6 @@ const Header = ({ popularMovie }) => {
   $backgroundContainer.appendChild(TopRatedContainer({ popularMovie }));
   return $header;
 };
-const BUTTON_MORE = "더보기";
 const MovieContainer = ({ movies }) => {
   const $container = createElement({
     tag: "div",
@@ -685,14 +641,14 @@ const MovieContainer = ({ movies }) => {
   $section.appendChild($h2);
   const $div = createElement({
     tag: "div",
-    classNames: ["oberserver"]
+    classNames: ["observer"]
   });
   const callback = (entries, observer2) => {
     entries.forEach(async (entry) => {
       if (entry.isIntersecting) {
         const params = new URLSearchParams(window.location.search);
         let fetchedMovies;
-        const currentPage = page.getNextPage();
+        const currentPage = getNextPage();
         if (params.has("query")) {
           fetchedMovies = await fetchSearchMovies(
             params.get("query"),
@@ -703,16 +659,16 @@ const MovieContainer = ({ movies }) => {
         }
         storeMovies.addMovies(fetchedMovies.results);
         if (fetchedMovies.totalPages === currentPage) {
-          observer2.unobserve($div);
+          return;
         }
         document.querySelector(".thumbnail-list").remove();
-        const oberserver = document.querySelector(".oberserver");
+        const observer3 = document.querySelector(".observer");
         const section = document.querySelector("section");
         section.insertBefore(
           MovieList({
             movies: storeMovies.movieList
           }),
-          oberserver
+          observer3
         );
       }
     });
@@ -721,7 +677,6 @@ const MovieContainer = ({ movies }) => {
   observer.observe($div);
   $section.appendChild(MovieList({ movies }));
   $section.appendChild($div);
-  $main.appendChild(Button({ text: BUTTON_MORE, type: "more" }));
   return $container;
 };
 const Main = ({ movies }) => {
